@@ -42,7 +42,7 @@ instalar_pacotes() {
 
     # Pacotes para o ambiente gráfico XFCE e interface
     echo -e "Instalando pacotes para ambiente gráfico XFCE e interface..."
-    sudo apt install -y xorg xfce4 xfce4-plugins xfce4-terminal xfce4-datetime-plugin xfce4-goodies \
+    sudo apt install -y xorg xfce4 xfce4-terminal xfce4-datetime-plugin xfce4-goodies \
         xfce4-genmon-plugin xfce4-notifyd xfce4-panel xfce4-pulseaudio-plugin xfce4-session \
         xfce4-settings xfce4-taskmanager xfce4-whiskermenu-plugin xfce4-screenshooter numlockx \
         lightdm lightdm-gtk-greeter
@@ -77,7 +77,7 @@ instalar_pacotes() {
     # Utilitários e ferramentas do sistema
     echo -e "Instalando utilitários e ferramentas do sistema..."
     sudo apt install -y gparted bash-completion vim geany geany-plugins htop neofetch fzf xdg-user-dirs \
-        xdg-utils gnome-calculator aisleriot p7zip-full rar unrar
+        xdg-utils flatpak gnome-calculator aisleriot p7zip-full rar unrar
     echo "Utilitários instalados!\n"
 
     # Atualizar o firmware do processador
