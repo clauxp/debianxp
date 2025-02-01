@@ -9,8 +9,8 @@ mkdir -p ~/Desktop ~/Downloads ~/Imagens ~/Vídeos ~/Documentos ~/Música
 # Instala pacotes essenciais
 sudo apt install -y xorg xinit i3-wm i3status i3blocks dmenu rofi picom feh lxappearance \
     lightdm firefox-esr thunar xfce4-terminal pavucontrol xfce4-power-manager \
-    pulseaudio bluez blueman alsa-utils vlc mpv ffmpeg tumbler evince file-roller unzip unrar \
-    ntfs-3g exfat-fuse exfat-utils ufw numlockx scrot xclip neofetch htop nano
+    pulseaudio bluez blueman alsa-utils vlc mpv ffmpeg tumbler evince file-roller unzip rar p7zip-full \
+    ntfs-3g exfat-fuse exfatprogs ufw numlockx scrot xclip neofetch htop nano
 
 # Ativa o firewall UFW
 sudo ufw enable
@@ -77,7 +77,7 @@ EOL
 
 # Baixa um papel de parede padrão
 mkdir -p ~/Imagens
-wget -O ~/Imagens/wallpaper.jpg https://source.unsplash.com/random/1920x1080?nature
+wget -O ~/Imagens/wallpaper.jpg https://source.unsplash.com/random/1920x1080
 
 # Mensagem final
 echo "✅ Instalação concluída! Reinicie o sistema e inicie a sessão i3wm."
