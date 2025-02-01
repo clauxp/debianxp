@@ -1,120 +1,83 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
-#====================================================================
-# Script de pós-instalação do Debian Minimal com XFCE
-# Autor: Cláudio
-#====================================================================
+# Atualiza o sistema
+sudo apt update && sudo apt upgrade -y
 
-PESSOA=$(whoami)
+# Cria pastas padrão no /home
+mkdir -p ~/Desktop ~/Downloads ~/Imagens ~/Vídeos ~/Documentos ~/Música
 
-# Função para garantir permissões de root
-ensure_root() {
-    if [ "$(id -u)" -ne 0 ]; then
-        echo "Este script precisa ser executado como root. Usando sudo..."
-        sudo "$0" "$@"
-        exit 1
-    fi
+# Instala pacotes essenciais
+sudo apt install -y xorg xinit i3-wm i3status i3blocks dmenu rofi picom feh lxappearance \
+    lightdm firefox-esr thunar xfce4-terminal pavucontrol xfce4-power-manager \
+    pulseaudio bluez blueman alsa-utils vlc mpv ffmpeg tumbler evince file-roller unzip unrar \
+    ntfs-3g exfat-fuse exfat-utils ufw numlockx scrot xclip neofetch htop nano
+
+# Ativa o firewall UFW
+sudo ufw enable
+
+# Configuração do i3wm
+mkdir -p ~/.config/i3
+cat <<EOL > ~/.config/i3/config
+# Tecla Mod (Super/Windows)
+set \$mod Mod4
+
+# Atalhos básicos
+bindsym \$mod+Return exec xfce4-terminal  # Abrir terminal
+bindsym \$mod+d exec rofi -show drun      # Abrir menu de aplicativos
+bindsym \$mod+Shift+e exec "i3-msg exit"  # Sair do i3wm
+bindsym \$mod+Shift+q kill                # Fechar janela
+bindsym \$mod+Shift+r restart             # Reiniciar i3wm
+bindsym \$mod+Shift+x exec "poweroff"     # Desligar o sistema
+bindsym \$mod+Shift+b exec "reboot"       # Reiniciar o sistema
+
+# Movimentação entre janelas
+bindsym \$mod+h focus left
+bindsym \$mod+l focus right
+bindsym \$mod+j focus down
+bindsym \$mod+k focus up
+
+# Alternar janela flutuante
+bindsym \$mod+Shift+space floating toggle
+
+# Controle de volume
+bindsym XF86AudioRaiseVolume exec "pactl set-sink-volume @DEFAULT_SINK@ +5%"
+bindsym XF86AudioLowerVolume exec "pactl set-sink-volume @DEFAULT_SINK@ -5%"
+bindsym XF86AudioMute exec "pactl set-sink-mute @DEFAULT_SINK@ toggle"
+
+# Barra de status
+bar {
+    status_command i3blocks
+    position top
+    font pango:Monospace 10
 }
 
-# Configurar a sources.list
-config_sources_list() {
-    echo -e "\nConfigurando sources.list com non-free e non-free-firmware..."
-    echo "#Bookworm (non-free)
-deb http://deb.debian.org/debian bookworm main contrib non-free non-free-firmware
-deb http://deb.debian.org/debian bookworm-updates main contrib non-free non-free-firmware
-deb https://security.debian.org/ bookworm-security main contrib non-free non-free-firmware
-" | sudo tee /etc/apt/sources.list
-    echo "Sources.list configurado com sucesso!"
-}
+# Papel de parede e programas iniciais
+exec --no-startup-id feh --bg-scale ~/Imagens/wallpaper.jpg
+exec --no-startup-id nm-applet
+exec --no-startup-id blueman-applet
+exec --no-startup-id xfce4-power-manager
+exec --no-startup-id picom --config ~/.config/picom.conf
+EOL
 
-# Atualizar e limpar o sistema
-atualizar_sistema() {
-    echo -e "\nAtualizando o sistema..."
-    sudo apt update && sudo apt upgrade -y
-    sudo apt full-upgrade -y
-    sudo apt clean && sudo apt autoclean && sudo apt autoremove -y
-    echo "Atualização e limpeza concluídas!"
-}
+# Configuração do i3blocks (barra de status)
+mkdir -p ~/.config/i3blocks
+cat <<EOL > ~/.config/i3blocks/config
+[time]
+command=date '+%H:%M | %d/%m/%Y'
+interval=60
 
-# Instalar pacotes essenciais organizados por categorias
-instalar_pacotes() {
-    echo -e "\nInstalando pacotes essenciais e categorizados...\n"
+[volume]
+command=pactl list sinks | grep 'Volume:' | head -n 1 | awk '{print "🔊 " \$5}'
+interval=5
 
-    # Pacotes para o ambiente gráfico XFCE e interface
-    echo -e "Instalando pacotes para ambiente gráfico XFCE e interface..."
-    sudo apt install -y xorg xfce4 xfce4-terminal xfce4-datetime-plugin xfce4-goodies \
-        xfce4-genmon-plugin xfce4-notifyd xfce4-panel xfce4-pulseaudio-plugin xfce4-session \
-        xfce4-settings xfce4-taskmanager xfce4-whiskermenu-plugin xfce4-screenshooter numlockx \
-        lightdm lightdm-gtk-greeter
-    echo "Pacotes para ambiente gráfico XFCE instalados!\n"
+[network]
+command=nmcli -t -f ACTIVE,SSID dev wifi | grep '^yes' | cut -d: -f2
+interval=10
+EOL
 
-    # Pacotes de multimídia (áudio e vídeo)
-    echo -e "Instalando pacotes para multimídia..."
-    sudo apt install -y pulseaudio pavucontrol vlc vlc-l10n smplayer smplayer-l10n smplayer-themes \
-        audacity youtube-dl
-    echo "Pacotes para multimídia instalados!\n"
+# Baixa um papel de parede padrão
+mkdir -p ~/Imagens
+wget -O ~/Imagens/wallpaper.jpg https://source.unsplash.com/random/1920x1080?nature
 
-    # Pacotes de escritório
-    echo -e "Instalando pacotes de escritório..."
-    sudo apt install -y libreoffice libreoffice-l10n-pt-br libreoffice-gnome libreoffice-style-breeze
-    echo "Pacotes de escritório instalados!\n"
-
-    # Pacotes para PDFs
-    echo -e "Instalando pacotes para manipulação de PDFs..."
-    sudo apt install -y atril poppler-utils
-    echo "Pacotes para PDFs instalados!\n"
-
-    # Pacotes para redes e conectividade
-    echo -e "Instalando pacotes para redes e conectividade..."
-    sudo apt install -y network-manager network-manager-gnome blueman bluez gufw
-    echo "Pacotes para redes instalados!\n"
-
-    # Temas e personalização
-    echo -e "Instalando temas e pacotes de personalização..."
-    sudo apt install -y arc-theme papirus-icon-theme breeze-cursor-theme mugshot lightdm-gtk-greeter-settings
-    echo "Temas e pacotes de personalização instalados!\n"
-
-    # Utilitários e ferramentas do sistema
-    echo -e "Instalando utilitários e ferramentas do sistema..."
-    sudo apt install -y gparted bash-completion vim geany geany-plugins htop neofetch fzf xdg-user-dirs \
-        xdg-utils flatpak gnome-calculator aisleriot p7zip-full rar unrar
-    echo "Utilitários instalados!\n"
-
-    # Atualizar o firmware do processador
-    echo -e "Atualizando o firmware do processador..."
-    sudo apt install -y intel-microcode
-    # Se você tiver processador AMD, descomente a linha abaixo:
-    # sudo apt install -y amd64-microcode
-    echo "Firmware atualizado!\n"
-}
-
-# Configurar o Flatpak e Flathub
-configurar_flatpak() {
-    echo -e "\nConfigurando Flatpak..."
-    flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-    echo "Flatpak configurado!"
-}
-
-# Melhorar desempenho com swappiness
-configurar_swappiness() {
-    echo -e "\nConfigurando swappiness..."
-    echo "vm.swappiness=5" | sudo tee -a /etc/sysctl.conf
-    sudo sysctl -p
-    echo "Swappiness configurado!"
-}
-
-# Finalização
-finalizar() {
-    echo -e "\nConfiguração concluída! Sistema pronto para uso!"
-    echo "Bem-vindo ao Debian, $PESSOA!"
-    echo "Reinicie o sistema para aplicar todas as mudanças."
-}
-
-# Execução do script
-ensure_root "$@"
-config_sources_list
-atualizar_sistema
-instalar_pacotes
-configurar_flatpak
-configurar_swappiness
-finalizar
+# Mensagem final
+echo "✅ Instalação concluída! Reinicie o sistema e inicie a sessão i3wm."
