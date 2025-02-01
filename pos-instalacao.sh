@@ -1,83 +1,382 @@
 #!/bin/bash
 
 # Atualiza o sistema
+echo "Atualizando o sistema..."
 sudo apt update && sudo apt upgrade -y
 
 # Cria pastas padrão no /home
+echo "Criando pastas padrão..."
 mkdir -p ~/Desktop ~/Downloads ~/Imagens ~/Vídeos ~/Documentos ~/Música
 
-# Instala pacotes essenciais
-sudo apt install -y xorg xinit i3-wm i3status i3blocks dmenu rofi picom feh lxappearance \
-    lightdm firefox-esr thunar xfce4-terminal pavucontrol xfce4-power-manager \
-    pulseaudio bluez blueman alsa-utils vlc mpv ffmpeg tumbler evince file-roller unzip rar p7zip-full \
-    ntfs-3g exfat-fuse exfatprogs ufw numlockx scrot xclip neofetch htop nano
+# Instala pacotes essenciais para o i3wm
+echo "Instalando pacotes essenciais..."
+sudo apt install -y xorg xinit i3-wm i3status i3blocks dmenu rofi picom feh lxappearance numlockx scrot xclip neofetch htop nano
 
-# Ativa o firewall UFW
-sudo ufw enable
+# Gerenciador de login
+echo "Instalando lightdm e greeter..."
+sudo apt install -y lightdm lightdm-gtk-greeter
+
+# Navegador
+echo "Instalando Firefox..."
+sudo apt install -y firefox-esr
+
+# Gerenciador de arquivos
+echo "Instalando gerenciador de arquivos..."
+sudo apt install -y thunar tumbler file-roller
+
+# Terminal
+echo "Instalando terminal XFCE..."
+sudo apt install -y xfce4-terminal
+
+# Gerenciamento de áudio
+echo "Instalando pacotes de áudio..."
+sudo apt install -y pulseaudio pavucontrol alsa-utils
+
+# Bluetooth
+echo "Instalando pacotes de Bluetooth..."
+sudo apt install -y bluez blueman
+
+# Suporte a mídias e codecs
+echo "Instalando VLC, MPV e codecs..."
+sudo apt install -y vlc mpv ffmpeg
+
+# Suporte a arquivos comprimidos
+echo "Instalando suporte a arquivos comprimidos..."
+sudo apt install -y p7zip-full
+
+# Suporte a sistemas de arquivos externos
+echo "Instalando suporte a sistemas de arquivos externos..."
+sudo apt install -y ntfs-3g exfat-fuse exfatprogs
+
+# Temas e ícones
+echo "Instalando temas e ícones..."
+sudo apt install -y lxappearance numix-gtk-theme numix-icon-theme numix-icon-theme-circle papirus-icon-theme arc-theme breeze-cursor-theme fonts-font-awesome
+
+# Gerenciamento de energia
+echo "Instalando gerenciador de energia..."
+sudo apt install -y xfce4-power-manager
+
+# Captura de tela
+echo "Instalando capturador de tela..."
+sudo apt install -y xfce4-screenshooter
+
+# Visualização de imagens
+echo "Instalando visualizador de imagens..."
+sudo apt install -y sxiv
+
+# Editor de textos
+echo "Instalando editores de texto..."
+sudo apt install -y geany geany-plugins vim
+
+# Ferramentas adicionais
+echo "Instalando ferramentas adicionais..."
+sudo apt install -y wmctrl xdotool xinput lxinput policykit-1-gnome transmission gnome-calculator
+
+# Leitor de PDFs
+echo "Instalando leitores de PDFs..."
+sudo apt install -y evince atril
+
+# Reprodutor de áudio adicional
+echo "Instalando reprodutor de áudio..."
+sudo apt install -y audacity smplayer smplayer-l10n smplayer-themes
 
 # Configuração do i3wm
+echo "Configurando o i3wm..."
 mkdir -p ~/.config/i3
 cat <<EOL > ~/.config/i3/config
-# Tecla Mod (Super/Windows)
-set \$mod Mod4
 
-# Atalhos básicos
-bindsym \$mod+Return exec xfce4-terminal  # Abrir terminal
-bindsym \$mod+d exec rofi -show drun      # Abrir menu de aplicativos
-bindsym \$mod+Shift+e exec "i3-msg exit"  # Sair do i3wm
-bindsym \$mod+Shift+q kill                # Fechar janela
-bindsym \$mod+Shift+r restart             # Reiniciar i3wm
-bindsym \$mod+Shift+x exec "poweroff"     # Desligar o sistema
-bindsym \$mod+Shift+b exec "reboot"       # Reiniciar o sistema
+# init ----------------------------------------------------------------------- #
 
-# Movimentação entre janelas
-bindsym \$mod+h focus left
-bindsym \$mod+l focus right
-bindsym \$mod+j focus down
-bindsym \$mod+k focus up
+# mod key (Alt=Mod1, Super=Mod4)
+set $mod Mod4
 
-# Alternar janela flutuante
-bindsym \$mod+Shift+space floating toggle
+# bindsym shortener
+set $sup bindsym Mod4
 
-# Controle de volume
-bindsym XF86AudioRaiseVolume exec "pactl set-sink-volume @DEFAULT_SINK@ +5%"
-bindsym XF86AudioLowerVolume exec "pactl set-sink-volume @DEFAULT_SINK@ -5%"
-bindsym XF86AudioMute exec "pactl set-sink-mute @DEFAULT_SINK@ toggle"
+# exec shortener
+set $exe        exec --no-startup-id
+set $exe_always exec_always --no-startup-id
 
-# Barra de status
+# user local bin path (usually '~/bin' or '~/.local/bin')
+set $bin_path ~/.local/bin
+
+# direction keys
+set $ukey Up
+set $dkey Down
+set $lkey Left
+set $rkey Right
+
+# pulseaudio sink (usually 0 or 1))
+set $pa_sink 0
+
+# default mail client
+set $default_mail ~/.local/bin/launcher-thunderbird
+
+# session control ------------------------------------------------------------ #
+
+$sup+Shift+c                 reload
+$sup+Shift+r                 restart
+
+$sup+Shift+F12               $exe $bin_path/dmenu-i3-logout
+
+# terminal ------------------------------------------------------------------- #
+
+$sup+Return                  $exe i3-sensible-terminal
+
+# focus ---------------------------------------------------------------------- #
+
+focus_follows_mouse no
+focus_wrapping no
+
+$sup+$lkey                   focus left
+$sup+$dkey                   focus down
+$sup+$ukey                   focus up
+$sup+$rkey                   focus right
+
+$sup+Prior                   focus parent
+$sup+Next                    focus child
+
+# splitting ------------------------------------------------------------------- #
+
+$sup+semicolon               split toggle
+
+# layout switching ----------------------------------------------------------- #
+
+$sup+slash                   layout toggle splitv splith
+$sup+Shift+question          layout toggle all
+$sup+F11                     fullscreen toggle
+
+# floating ------------------------------------------------------------------- #
+
+floating_modifier Mod1
+
+$sup+period                  floating toggle
+$sup+comma                   focus mode_toggle
+
+# moving --------------------------------------------------------------------- #
+
+$sup+Shift+$lkey             move left
+$sup+Shift+$dkey             move down
+$sup+Shift+$ukey             move up
+$sup+Shift+$rkey             move right
+
+# resizing ------------------------------------------------------------------- #
+
+$sup+Control $rkey           resize grow   width  5 px or 5 ppt
+$sup+Control $lkey           resize shrink width  5 px or 5 ppt
+$sup+Control $ukey           resize grow   height 5 px or 5 ppt
+$sup+Control $dkey           resize shrink height 5 px or 5 ppt
+
+# icons ---------------------------------------------------------------------- #
+
+# editor       
+# menu         
+# document     
+# table        
+# code         
+# chat         
+# news         
+# monitor      
+# firefox      
+# chrome       
+# terminal     
+# window       
+# github       
+# whatsapp     
+# telegram     
+# hangout      
+# bank         
+# folder       
+# package      
+#
+# no preview...
+#
+# volume
+# play
+# music
+# video
+# email
+
+set $ico_bank     <span font='Font Awesome'>&#xf155;</span>
+set $ico_chat     <span font='Font Awesome'>&#xf27b;</span>
+set $ico_chrome   <span font='Font Awesome'>&#xf268;</span>
+set $ico_code     <span font='Font Awesome'>&#xf121;</span>
+set $ico_document <span font='Font Awesome'>&#xf0f6;</span>
+set $ico_editor   <span font='Font Awesome'>&#xf044;</span>
+set $ico_email    <span font='Font Awesome'>&#xf003;</span>
+set $ico_firefox  <span font='Font Awesome'>&#xf269;</span>
+set $ico_folder   <span font='Font Awesome'>&#xf115;</span>
+set $ico_github   <span font='Font Awesome'>&#xf09b;</span>
+set $ico_hangouts <span font='Font Awesome'>&#xf10e;</span>
+set $ico_menu     <span font='Font Awesome'>&#xf0c9;</span>
+set $ico_monitor  <span font='Font Awesome'>&#xf26c;</span>
+set $ico_music    <span font='Font Awesome'>&#xf001;</span>
+set $ico_news     <span font='Font Awesome'>&#xf09e;</span>
+set $ico_package  <span font='Font Awesome'>&#xf1c6;</span>
+set $ico_play     <span font='Font Awesome'>&#xf01d;</span>
+set $ico_table    <span font='Font Awesome'>&#xf0ce;</span>
+set $ico_telegram <span font='Font Awesome'>&#xf1d9;</span>
+set $ico_terminal <span font='Font Awesome'>&#xf120;</span>
+set $ico_video    <span font='Font Awesome'>&#xf008;</span>
+set $ico_volume   <span font='Font Awesome'>&#xf028;</span>
+set $ico_whatsapp <span font='Font Awesome'>&#xf232;</span>
+set $ico_window   <span font='Font Awesome'>&#xf2d0;</span>
+
+# workspace labels ----------------------------------------------------------- #
+
+set $ws1  "1"
+set $ws2  "2"
+#set $ws3  "3"
+#set $ws4  "4"
+#set $ws5  "5"
+#set $ws6  "6"
+#set $ws7  "7"
+#set $ws8  "8"
+#set $ws9  "9"
+#set $ws10 "10"
+
+# workspace switching -------------------------------------------------------- #
+
+workspace_auto_back_and_forth yes
+
+$sup+1 workspace $ws1
+$sup+2 workspace $ws2
+$sup+3 workspace $ws3
+$sup+4 workspace $ws4
+$sup+5 workspace $ws5
+$sup+6 workspace $ws6
+$sup+7 workspace $ws7
+$sup+8 workspace $ws8
+$sup+9 workspace $ws9
+$sup+0 workspace $ws10
+
+# moving to workspace -------------------------------------------------------- #
+
+$sup+Shift+1 move container to workspace $ws1;  workspace $ws1
+$sup+Shift+2 move container to workspace $ws2;  workspace $ws2
+$sup+Shift+3 move container to workspace $ws3;  workspace $ws3
+$sup+Shift+4 move container to workspace $ws4;  workspace $ws4
+$sup+Shift+5 move container to workspace $ws5;  workspace $ws5
+$sup+Shift+6 move container to workspace $ws6;  workspace $ws6
+$sup+Shift+7 move container to workspace $ws7;  workspace $ws7
+$sup+Shift+8 move container to workspace $ws8;  workspace $ws8
+$sup+Shift+9 move container to workspace $ws9;  workspace $ws9
+$sup+Shift+0 move container to workspace $ws10; workspace $ws10
+
+# workspace cycling ---------------------------------------------------------- #
+
+bindsym Ctrl+Mod1+Right      workspace next
+bindsym Ctrl+Mod1+Left       workspace prev
+
+# urgent workspace ----------------------------------------------------------- #
+
+$sup+u [urgent=latest] focus
+
+# windows -------------------------------------------------------------------- #
+
+$sup+q                 kill
+
+default_border pixel 2
+$sup+b                       border toggle
+
+# colors --------------------------------------------------------------------- #
+
+set $darker   #080910
+set $dark     #181920
+set $black    #2C323E
+set $darkgray #3B4252
+set $gray     #E7E8EB
+set $white    #F5F6F7
+set $red      #BF616A
+set $orange   #DBAB6B
+set $yellow   #EBCB8B
+set $green    #A3BE8C
+set $cyan     #88C0D0
+set $blue     #91B1D1
+set $darkblue #416181
+set $purple   #B48EAD
+
+# appearance ----------------------------------------------------------------- #
+
+font pango:Open Sans Semibold 10
+
+# class                  border  backgr  text       indicator  client_border
+client.focused           $black  $black  $blue      $cyan      $black
+client.unfocused         $darker $darker $darkblue  $cyan      $darker
+client.focused_inactive  $dark   $dark   $darkblue  $cyan      $dark
+client.urgent            $red    $red    $dark      $cyan      $red
+
+# status bar ----------------------------------------------------------------- #
+
 bar {
-    status_command i3blocks
-    position top
-    font pango:Monospace 10
+        position bottom
+        wheel_up_cmd nop
+        wheel_down_cmd nop
+        tray_padding 5
+        mode dock
+        
+       status_command i3blocks
+
+        font pango:Open Sans 10
+
+        colors {
+            statusline    $white
+            background    $dark
+
+            #                   border     backgr    text
+            focused_workspace   $blue      $blue     $darker
+            active_workspace    $dark      $dark     $darkgray
+            inactive_workspace  $dark      $dark     $darkgray
+            urgent_workspace    $red       $red      $darker
+        }
 }
 
-# Papel de parede e programas iniciais
-exec --no-startup-id feh --bg-scale ~/Imagens/wallpaper.jpg
-exec --no-startup-id nm-applet
-exec --no-startup-id blueman-applet
-exec --no-startup-id xfce4-power-manager
-exec --no-startup-id picom --config ~/.config/picom.conf
+
+# i3blocks - caps lock status
+bindsym --release Caps_Lock  $exe pkill -SIGRTMIN+11 i3blocks
+
+
+# screenshots ---------------------------------------------------------------- #
+
+bindsym Print                $exe xfce4-screenshooter
+
+# volume control and i3blocks volume status ---------------------------------- #
+
+set $vol_signal pkill -SIGRTMIN+10 i3blocks
+
+bindsym XF86AudioRaiseVolume $exe pactl set-sink-volume $pa_sink +5%  && $vol_signal
+bindsym XF86AudioLowerVolume $exe pactl set-sink-volume $pa_sink -5%  && $vol_signal
+bindsym XF86AudioMute        $exe pactl set-sink-mute $pa_sink toggle && $vol_signal
+
+bindsym XF86HomePage         $exe pavucontrol
+
+# launchers ------------------------------------------------------------------ #
+
+# rofi Alt+Tab to show windows list...
+$sup+space                      $exe rofi -show drun 
+
+#  ch Firefox...
+$sup+w                       $exe firefox
+
+# launch thunar...
+$sup+p                       $exe thunar
+
+
+# session startup ------------------------------------------------------------ #
+
+$exe_always picom --config ~/.config/picom.conf
+$exe_always blueman-applet
+$exe_always xset b off
+$exe_always numlockx
+$exe_always nitrogen --restore 
+$exe /usr/lib/policykit-1-gnome/polkit-gnome-authentication-agent-1
+$exe xfce4-power-manager
+$exe nm-applet
+
+# ---------------------------------------------------------------------------- #
+
 EOL
-
-# Configuração do i3blocks (barra de status)
-mkdir -p ~/.config/i3blocks
-cat <<EOL > ~/.config/i3blocks/config
-[time]
-command=date '+%H:%M | %d/%m/%Y'
-interval=60
-
-[volume]
-command=pactl list sinks | grep 'Volume:' | head -n 1 | awk '{print "🔊 " \$5}'
-interval=5
-
-[network]
-command=nmcli -t -f ACTIVE,SSID dev wifi | grep '^yes' | cut -d: -f2
-interval=10
-EOL
-
-# Baixa um papel de parede padrão
-mkdir -p ~/Imagens
-wget -O ~/Imagens/wallpaper.jpg https://source.unsplash.com/random/1920x1080
 
 # Mensagem final
 echo "✅ Instalação concluída! Reinicie o sistema e inicie a sessão i3wm."
+
