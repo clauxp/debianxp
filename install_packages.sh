@@ -15,7 +15,9 @@ sudo apt install -y xorg xinit i3-wm i3status i3blocks dmenu rofi picom feh lxap
     fonts-font-awesome nitrogen network-manager network-manager-gnome pulseaudio pavucontrol \
     xfce4-screenshooter sxiv xfce4-power-manager numlockx geany geany-plugins vim wmctrl \
     xdotool xinput lxinput policykit-1-gnome blueman transmission vlc vlc-l10n audacity \
-    smplayer smplayer-l10n smplayer-themes atril gnome-calculator xfce4-screenshooter bluez blueman
+    smplayer smplayer-l10n smplayer-themes atril gnome-calculator xfce4-screenshooter bluez blueman \
+    arandr xcompmgr lxappearance nitrogen xdg-user-dirs xdg-utils policykit-1-gnome xinput lxinput \
+    geany geany-plugins suckless-tools neofetch cmatrix lolcat
 
 # Mensagem final
 echo "✅ Instalação concluída!"
